@@ -196,13 +196,13 @@ fun CartaoTemplateCard(
         // Bottom section: number + owner + expiry + network
         Column(
             modifier            = Modifier.align(Alignment.BottomStart),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // Card number
             Text(
                 text          = "•••• •••• •••• ${cartao.finalNumero.ifBlank { "????" }}",
                 color         = Color.White,
-                fontSize      = 14.sp,
+                fontSize      = 17.sp,
                 fontWeight    = FontWeight.Medium,
                 letterSpacing = 2.sp,
             )
@@ -216,15 +216,15 @@ fun CartaoTemplateCard(
                 Column {
                     Text(
                         text          = "TITULAR",
-                        color         = Color.White.copy(alpha = 0.55f),
-                        fontSize      = 7.sp,
-                        letterSpacing = 1.sp,
+                        color         = Color.White.copy(alpha = 0.60f),
+                        fontSize      = 9.sp,
+                        letterSpacing = 0.5.sp,
                     )
                     Text(
                         text       = cartao.nomeTitular.uppercase().ifBlank { "—" },
                         color      = Color.White,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontSize   = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
                         maxLines   = 1,
                         overflow   = TextOverflow.Ellipsis,
                     )
@@ -234,15 +234,15 @@ fun CartaoTemplateCard(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text          = "VALIDADE",
-                        color         = Color.White.copy(alpha = 0.55f),
-                        fontSize      = 7.sp,
-                        letterSpacing = 1.sp,
+                        color         = Color.White.copy(alpha = 0.60f),
+                        fontSize      = 9.sp,
+                        letterSpacing = 0.5.sp,
                     )
                     Text(
                         text       = cartao.validade.ifBlank { "--/--" },
                         color      = Color.White,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontSize   = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
 
@@ -250,7 +250,7 @@ fun CartaoTemplateCard(
                 Text(
                     text       = cartao.bandeira.uppercase(),
                     color      = Color.White,
-                    fontSize   = 13.sp,
+                    fontSize   = 15.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }

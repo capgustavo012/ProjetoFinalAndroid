@@ -9,6 +9,7 @@
 ## Histórico de Alterações
 
 <!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
+- 2026-05-19 — ListaScreen alterada para padrão premium sem FAB sobreposto: ação de adicionar movida para o topo (ícone + em `AppTopAppBar.actions`) e texto do estado vazio atualizado
 - 2026-05-19 — Adicionado campo `template` ao modelo de domínio `Cartao` e a `CartaoEntity`; migração Room v1→v2; criado `CartaoTemplateCard` e `CartaoTemplateMini` em `ui/components/`; ListaScreen e CadastrarAlterarScreen atualizados com seletor de template visual (Bradesco, Itaú, Nubank, Inter, C6 Bank, Padrão)
 - 2026-05-19 — Downgrade do Android Gradle Plugin para 9.0.0 para compatibilidade com Android Studio; seção de build atualizada
 - 2026-05-15 — Revisão completa: corrigidos tokens IconSize (extraSmall/small/extraLarge), adicionado smallMedium ao Spacing, corrigida Matriz de Estratégia (Repository em vez de DAO, tipos Cartao), corrigida ordem de parâmetros do AppScaffold, documentados CadastrarAlterarUiState.salvando e isEdicao

@@ -12,7 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
@@ -100,17 +100,23 @@ fun ListaContent(
 
     AppScaffold(
         snackbarHostState    = snackbarHostState,
-        topBar               = { AppTopAppBar(title = "Meus Cartões") },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onEvent(ListaEvent.NavegaParaNovo) }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Novo cartão")
-            }
+        topBar               = {
+            AppTopAppBar(
+                title    = "Meus Cartões",
+                subtitle = "Gerencie seus cartões cadastrados",
+                large    = true,
+                actions  = {
+                    FilledTonalIconButton(onClick = { onEvent(ListaEvent.NavegaParaNovo) }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Novo cartão")
+                    }
+                },
+            )
         },
     ) { paddingValues ->
         when {
             uiState.carregando        -> AppLoading()
             uiState.cartoes.isEmpty() -> EmptyState(
-                message  = "Nenhum cartão cadastrado.\nToque em + para adicionar.",
+                message  = "Nenhum cartão cadastrado.\nToque em + no topo para adicionar.",
                 modifier = Modifier.padding(paddingValues),
             )
             else -> LazyColumn(
