@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.app.gerenciadorcartoes.repository.CartaoDetalheRepository
 import com.app.gerenciadorcartoes.repository.CartaoRepository
 import com.app.gerenciadorcartoes.ui.feature.detalhe.DetalheEvent
 import com.app.gerenciadorcartoes.ui.feature.detalhe.DetalheUiEvent
@@ -21,8 +22,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DetalheViewModel @Inject constructor(
-    savedStateHandle         : SavedStateHandle,
-    private val cartaoRepository: CartaoRepository,
+    savedStateHandle              : SavedStateHandle,
+    private val cartaoRepository  : CartaoRepository,
+    private val detalheRepository : CartaoDetalheRepository,
 ) : ViewModel() {
 
     private val route : DetalheRoute = savedStateHandle.toRoute()
@@ -49,9 +51,9 @@ class DetalheViewModel @Inject constructor(
     private fun observarCartao() {
         viewModelScope.launch {
             runCatching {
-                cartaoRepository.observarPorId(id).collect { cartao ->
-                    if (cartao != null) {
-                        _uiState.update { it.copy(cartao = cartao, carregando = false) }
+                detalheRepository.observarDetalhePorId(id).collect { detalhe ->
+                    if (detalhe != null) {
+                        _uiState.update { it.copy(detalhe = detalhe, carregando = false) }
                     } else {
                         // Cartão excluído externamente — navega de volta
                         _uiState.update { it.copy(carregando = false) }

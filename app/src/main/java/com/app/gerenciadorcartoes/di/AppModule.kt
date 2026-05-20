@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.app.gerenciadorcartoes.data.local.dao.CartaoDao
 import com.app.gerenciadorcartoes.data.local.database.AppDatabase
+import com.app.gerenciadorcartoes.repository.CartaoDetalheRepository
+import com.app.gerenciadorcartoes.repository.CartaoDetalheRepositoryImpl
 import com.app.gerenciadorcartoes.repository.CartaoRepository
 import com.app.gerenciadorcartoes.repository.CartaoRepositoryImpl
 import dagger.Binds
@@ -21,6 +23,12 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindCartaoRepository(impl: CartaoRepositoryImpl): CartaoRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCartaoDetalheRepository(
+        impl: CartaoDetalheRepositoryImpl
+    ): CartaoDetalheRepository
 
     companion object {
         @Provides
