@@ -22,12 +22,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CadastrarAlterarViewModel @Inject constructor(
-    savedStateHandle        : SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val cartaoRepository: CartaoRepository,
 ) : ViewModel() {
 
-    private val route : CadastrarAlterarRoute = savedStateHandle.toRoute()
-    private val id    : Long                   = route.id
+    private val route: CadastrarAlterarRoute = savedStateHandle.toRoute()
+    private val id: Long = route.id
 
     private val _uiState = MutableStateFlow(CadastrarAlterarUiState(carregando = id != 0L))
     val uiState: StateFlow<CadastrarAlterarUiState> = _uiState.asStateFlow()
@@ -92,7 +92,11 @@ class CadastrarAlterarViewModel @Inject constructor(
                 }
             }.onFailure { erro ->
                 _uiState.update { it.copy(carregando = false) }
-                _uiEvent.send(CadastrarAlterarUiEvent.MostrarErro(erro.message ?: "Erro ao carregar cartão"))
+                _uiEvent.send(
+                    CadastrarAlterarUiEvent.MostrarErro(
+                        erro.message ?: "Erro ao carregar cartão"
+                    )
+                )
             }
         }
     }
@@ -104,7 +108,7 @@ class CadastrarAlterarViewModel @Inject constructor(
             _uiState.update { it.copy(salvando = true) }
             runCatching {
                 val cartao = Cartao(
-                    id          = id,
+                    id = id,
                     nomeTitular = _uiState.value.nomeTitular.trim(),
                     finalNumero = _uiState.value.finalNumero.trim(),
                     bandeira    = _uiState.value.bandeira.trim(),
@@ -113,11 +117,15 @@ class CadastrarAlterarViewModel @Inject constructor(
                     template    = _uiState.value.template,
                 )
                 if (id == 0L) cartaoRepository.salvar(cartao)
-                else          cartaoRepository.atualizar(cartao)
+                else cartaoRepository.atualizar(cartao)
                 _uiEvent.send(CadastrarAlterarUiEvent.NavigateBack)
             }.onFailure { erro ->
                 _uiState.update { it.copy(salvando = false) }
-                _uiEvent.send(CadastrarAlterarUiEvent.MostrarErro(erro.message ?: "Erro ao salvar cartão"))
+                _uiEvent.send(
+                    CadastrarAlterarUiEvent.MostrarErro(
+                        erro.message ?: "Erro ao salvar cartão"
+                    )
+                )
             }
         }
     }

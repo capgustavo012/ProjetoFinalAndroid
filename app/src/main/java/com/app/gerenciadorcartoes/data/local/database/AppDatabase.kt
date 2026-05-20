@@ -5,12 +5,14 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.app.gerenciadorcartoes.data.local.dao.CartaoDao
+import com.app.gerenciadorcartoes.data.local.dao.CadastroUsuarioDao
 import com.app.gerenciadorcartoes.data.local.entity.CartaoEntity
+import com.app.gerenciadorcartoes.data.local.entity.CadastroUsuarioEntity
 
 @Database(
-    entities     = [CartaoEntity::class],
+    entities     = [CartaoEntity::class, CadastroUsuarioEntity::class],
     version      = 2,
-    exportSchema = false,
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cartaoDao(): CartaoDao
@@ -24,4 +26,5 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
     }
+    abstract fun cadastroUsuarioDao(): CadastroUsuarioDao
 }

@@ -17,6 +17,7 @@
 - 2026-05-19 — ListaScreen alterada para padrão premium sem FAB sobreposto: ação de adicionar movida para o topo (ícone + em `AppTopAppBar.actions`) e texto do estado vazio atualizado
 - 2026-05-19 — Adicionado campo `template` ao modelo de domínio `Cartao` e a `CartaoEntity`; migração Room v1→v2; criado `CartaoTemplateCard` e `CartaoTemplateMini` em `ui/components/`; ListaScreen e CadastrarAlterarScreen atualizados com seletor de template visual (Bradesco, Itaú, Nubank, Inter, C6 Bank, Padrão)
 - 2026-05-19 — Downgrade do Android Gradle Plugin para 9.0.0 para compatibilidade com Android Studio; seção de build atualizada
+- 2026-05-16 — Adicionada feature Login: LoginUiState, LoginEvent, LoginUiEvent, LoginScreen, LoginViewModel, LoginRoute; AppNavHost atualizado com LoginRoute como startDestination
 - 2026-05-15 — Revisão completa: corrigidos tokens IconSize (extraSmall/small/extraLarge), adicionado smallMedium ao Spacing, corrigida Matriz de Estratégia (Repository em vez de DAO, tipos Cartao), corrigida ordem de parâmetros do AppScaffold, documentados CadastrarAlterarUiState.salvando e isEdicao
 - 2026-05-15 — Tradução completa para pt-BR; todos os arquivos da pasta docs/ atualizados
 - 2026-05-15 — Adicionados Guia de Manutenção e Histórico de Alterações; criado .github/copilot-instructions.md para aplicação contínua das regras de atualização
@@ -77,11 +78,13 @@ app/src/main/java/com/app/gerenciadorcartoes/
     ├── components/                   AppScaffold · AppTopAppBar · AppLoading · EmptyState
     ├── navigation/                   Routes.kt · AppNavHost.kt
     ├── feature/
+    │   ├── login/                    LoginEvent · LoginUiEvent · LoginScreen · state/LoginUiState
     │   ├── lista/                    ListaEvent · ListaUiEvent · ListaScreen · state/ListaUiState
     │   ├── detalhe/                  DetalheEvent · DetalheUiEvent · DetalheScreen · state/DetalheUiState
     │   └── cadastraralterar/         CadastrarAlterarEvent · CadastrarAlterarUiEvent
     │                                 CadastrarAlterarScreen · state/CadastrarAlterarUiState
     └── viewmodel/
+        ├── LoginViewModel.kt
         ├── ListaViewModel.kt
         ├── DetalheViewModel.kt
         └── CadastrarAlterarViewModel.kt
