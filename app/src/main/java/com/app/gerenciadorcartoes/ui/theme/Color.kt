@@ -2,9 +2,9 @@ package com.app.gerenciadorcartoes.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Paleta Electric Blue — MD3 completo ──────────────────────────────────────
-// Brand primary: azul elétrico #0052CC  (diferente do roxo Nubank #820AD1)
-// Apelo jovem / fintech moderno: paleta azul + verde neón como acento
+// ── Paleta Electric Blue + Purple accent — MD3 completo ──────────────────────
+// Brand primary : azul elétrico #0052CC  (identidade principal)
+// Tertiary      : roxo suave  #6750A4  (harmonia com cartões roxos — discreto)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Light scheme
@@ -18,10 +18,11 @@ val MdThemeLightOnSecondary          = Color(0xFFFFFFFF)
 val MdThemeLightSecondaryContainer   = Color(0xFFCCE5FF)
 val MdThemeLightOnSecondaryContainer = Color(0xFF001E30)
 
-val MdThemeLightTertiary            = Color(0xFF006E1C)   // verde profundo (acento neón)
+// Tertiary: roxo MD3 reference (T40) — acento discreto, harmônico com cartões roxos
+val MdThemeLightTertiary            = Color(0xFF6750A4)
 val MdThemeLightOnTertiary          = Color(0xFFFFFFFF)
-val MdThemeLightTertiaryContainer   = Color(0xFF97F990)
-val MdThemeLightOnTertiaryContainer = Color(0xFF002203)
+val MdThemeLightTertiaryContainer   = Color(0xFFEADDFF)   // lavanda suave
+val MdThemeLightOnTertiaryContainer = Color(0xFF21005D)
 
 val MdThemeLightError            = Color(0xFFB3261E)
 val MdThemeLightOnError          = Color(0xFFFFFFFF)
@@ -50,10 +51,11 @@ val MdThemeDarkOnSecondary          = Color(0xFF003450)
 val MdThemeDarkSecondaryContainer   = Color(0xFF004B70)
 val MdThemeDarkOnSecondaryContainer = Color(0xFFCCE5FF)
 
-val MdThemeDarkTertiary            = Color(0xFF7BDB77)   // verde neón — impacto visual
-val MdThemeDarkOnTertiary          = Color(0xFF003908)
-val MdThemeDarkTertiaryContainer   = Color(0xFF005311)
-val MdThemeDarkOnTertiaryContainer = Color(0xFF97F990)
+// Tertiary dark: roxo claro T80 — suave no fundo navy
+val MdThemeDarkTertiary            = Color(0xFFCDB4FF)
+val MdThemeDarkOnTertiary          = Color(0xFF381E72)
+val MdThemeDarkTertiaryContainer   = Color(0xFF4F378A)
+val MdThemeDarkOnTertiaryContainer = Color(0xFFEADDFF)
 
 val MdThemeDarkError            = Color(0xFFF2B8B5)
 val MdThemeDarkOnError          = Color(0xFF601410)
