@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.app.gerenciadorcartoes.ui.navigation.AppNavHost
+import com.app.gerenciadorcartoes.ui.navigation.DetalheRoute
+import com.app.gerenciadorcartoes.ui.navigation.ListaRoute
 import com.app.gerenciadorcartoes.ui.theme.GerenciadorCartoesTheme
 import dagger.hilt.android.AndroidEntryPoint
 

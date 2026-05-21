@@ -11,11 +11,12 @@ import com.app.gerenciadorcartoes.data.local.entity.CadastroUsuarioEntity
 
 @Database(
     entities     = [CartaoEntity::class, CadastroUsuarioEntity::class],
-    version      = 2,
-    exportSchema = false
+    version      = 3,
+    exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cartaoDao(): CartaoDao
+    abstract fun cadastroUsuarioDao(): CadastroUsuarioDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -25,6 +26,26 @@ abstract class AppDatabase : RoomDatabase() {
                 )
             }
         }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS CadastroUsuario (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        nome TEXT NOT NULL,
+                        cpf TEXT NOT NULL,
+                        cep INTEGER NOT NULL,
+                        endereco TEXT NOT NULL,
+                        number TEXT NOT NULL,
+                        bairro TEXT NOT NULL,
+                        estado TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        senha TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
     }
-    abstract fun cadastroUsuarioDao(): CadastroUsuarioDao
 }

@@ -1,9 +1,11 @@
 package com.app.gerenciadorcartoes.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.toRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.app.gerenciadorcartoes.ui.feature.ajustarlimite.AjustarLimiteScreen
 import com.app.gerenciadorcartoes.ui.feature.cadastraralterar.CadastrarAlterarScreen
 import com.app.gerenciadorcartoes.ui.feature.cadastrousuario.CadastroUsuarioScreen
 import com.app.gerenciadorcartoes.ui.feature.detalhe.DetalheScreen
@@ -12,7 +14,7 @@ import com.app.gerenciadorcartoes.ui.feature.login.LoginScreen
 import com.app.gerenciadorcartoes.ui.feature.splash.SplashScreen
 
 @Composable
-fun AppNavHost() {
+fun AppNavHost(startDestination: Any = LoginRoute) {
     val navController = rememberNavController()
 
     NavHost(
@@ -59,7 +61,29 @@ fun AppNavHost() {
 
         composable<DetalheRoute> {
             DetalheScreen(
-                navigateBack = { navController.popBackStack() },
+                navigateBack              = { navController.popBackStack() },
+                onNavigateToAjustarLimite = { id ->
+                    navController.navigate(AjustarLimiteRoute(id = id))
+                },
+            )
+        }
+
+        composable<AjustarLimiteRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<AjustarLimiteRoute>()
+
+            AjustarLimiteScreen(
+                navigateBack = {
+                    val voltouParaDetalhe = navController.popBackStack<DetalheRoute>(
+                        inclusive = false,
+                    )
+
+                    if (!voltouParaDetalhe) {
+                        navController.navigate(DetalheRoute(id = route.id)) {
+                            popUpTo<AjustarLimiteRoute> { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                },
             )
         }
 
