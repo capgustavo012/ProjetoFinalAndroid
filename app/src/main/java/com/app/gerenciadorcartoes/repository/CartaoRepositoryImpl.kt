@@ -27,6 +27,9 @@ class CartaoRepositoryImpl @Inject constructor(
     override suspend fun atualizar(cartao: Cartao) =
         cartaoDao.atualizar(cartao.toEntity())
 
+    override suspend fun atualizarLimite(id: Long, limite: Double) =
+        cartaoDao.atualizarLimite(id, limite)
+
     override suspend fun excluirPorId(id: Long) =
         cartaoDao.excluirPorId(id)
 }

@@ -2,8 +2,11 @@ package com.app.gerenciadorcartoes.di
 
 import android.content.Context
 import androidx.room.Room
+import com.app.gerenciadorcartoes.data.local.dao.CadastroUsuarioDao
 import com.app.gerenciadorcartoes.data.local.dao.CartaoDao
 import com.app.gerenciadorcartoes.data.local.database.AppDatabase
+import com.app.gerenciadorcartoes.repository.CartaoDetalheRepository
+import com.app.gerenciadorcartoes.repository.CartaoDetalheRepositoryImpl
 import com.app.gerenciadorcartoes.repository.CartaoRepository
 import com.app.gerenciadorcartoes.repository.CartaoRepositoryImpl
 import dagger.Binds
@@ -22,6 +25,12 @@ abstract class AppModule {
     @Singleton
     abstract fun bindCartaoRepository(impl: CartaoRepositoryImpl): CartaoRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindCartaoDetalheRepository(
+        impl: CartaoDetalheRepositoryImpl
+    ): CartaoDetalheRepository
+
     companion object {
         @Provides
         @Singleton
@@ -30,10 +39,18 @@ abstract class AppModule {
                 context,
                 AppDatabase::class.java,
                 "gerenciador-cartoes-db",
-            ).addMigrations(AppDatabase.MIGRATION_1_2).build()
+            ).addMigrations(
+                AppDatabase.MIGRATION_1_2,
+                AppDatabase.MIGRATION_2_3,
+            ).build()
 
         @Provides
         @Singleton
         fun provideCartaoDao(database: AppDatabase): CartaoDao = database.cartaoDao()
+
+        @Provides
+        @Singleton
+        fun provideCadastroUsuarioDao(database: AppDatabase): CadastroUsuarioDao =
+            database.cadastroUsuarioDao()
     }
 }

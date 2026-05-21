@@ -28,6 +28,9 @@ interface CartaoDao {
     @Update
     suspend fun atualizar(entity: CartaoEntity)
 
+    @Query("UPDATE cartoes SET limite = :limite WHERE id = :id")
+    suspend fun atualizarLimite(id: Long, limite: Double)
+
     @Query("DELETE FROM cartoes WHERE id = :id")
     suspend fun excluirPorId(id: Long)
 }

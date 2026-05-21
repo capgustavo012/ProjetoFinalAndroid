@@ -1,9 +1,9 @@
 package com.app.gerenciadorcartoes.ui.feature.detalhe.state
 
-import com.app.gerenciadorcartoes.model.Cartao
+import com.app.gerenciadorcartoes.model.CartaoDetalhe
 
 data class DetalheUiState(
-    val cartao     : Cartao  = Cartao(),
-    val carregando : Boolean = false,
-    val erro       : String? = null,
+    val detalhe    : CartaoDetalhe = CartaoDetalhe(),
+    val carregando : Boolean       = false,
+    val erro       : String?       = null,
 )
