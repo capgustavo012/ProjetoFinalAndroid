@@ -43,6 +43,9 @@ class DetalheViewModel @Inject constructor(
     fun onEvent(event: DetalheEvent) {
         when (event) {
             DetalheEvent.Voltar -> viewModelScope.launch { _uiEvent.send(DetalheUiEvent.NavigateBack) }
+            DetalheEvent.AjustarLimite -> viewModelScope.launch {
+                _uiEvent.send(DetalheUiEvent.NavigateToAjustarLimite(id))
+            }
         }
     }
 

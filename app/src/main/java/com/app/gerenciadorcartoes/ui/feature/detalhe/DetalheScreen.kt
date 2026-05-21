@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -53,8 +54,9 @@ private val PtBrLocale: Locale = Locale.forLanguageTag("pt-BR")
 // =============================================================================
 @Composable
 fun DetalheScreen(
-    navigateBack : () -> Unit,
-    viewModel    : DetalheViewModel = hiltViewModel(),
+    navigateBack              : () -> Unit,
+    onNavigateToAjustarLimite : (Long) -> Unit,
+    viewModel                 : DetalheViewModel = hiltViewModel(),
 ) {
     val uiState           by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -62,8 +64,9 @@ fun DetalheScreen(
     LaunchedEffect(viewModel) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                DetalheUiEvent.NavigateBack   -> navigateBack()
-                is DetalheUiEvent.MostrarErro -> snackbarHostState.showSnackbar(event.mensagem)
+                DetalheUiEvent.NavigateBack               -> navigateBack()
+                is DetalheUiEvent.NavigateToAjustarLimite -> onNavigateToAjustarLimite(event.id)
+                is DetalheUiEvent.MostrarErro             -> snackbarHostState.showSnackbar(event.mensagem)
             }
         }
     }
@@ -98,6 +101,7 @@ fun DetalheContent(
             else               -> DetalheBody(
                 detalhe       = uiState.detalhe,
                 paddingValues = paddingValues,
+                onEvent       = onEvent,
             )
         }
     }
@@ -110,6 +114,7 @@ fun DetalheContent(
 private fun DetalheBody(
     detalhe       : CartaoDetalhe,
     paddingValues : PaddingValues,
+    onEvent       : (DetalheEvent) -> Unit,
 ) {
     val spacing = LocalSpacing.current
 
@@ -122,7 +127,10 @@ private fun DetalheBody(
         verticalArrangement = Arrangement.spacedBy(spacing.extraLarge),
     ) {
         CartaoSection(detalhe = detalhe)
-        LimiteSection(detalhe = detalhe)
+        LimiteSection(
+            detalhe          = detalhe,
+            onAjustarLimite = { onEvent(DetalheEvent.AjustarLimite) },
+        )
     }
 }
 
@@ -132,10 +140,12 @@ private fun CartaoSection(detalhe: CartaoDetalhe) {
 }
 
 @Composable
-private fun LimiteSection(detalhe: CartaoDetalhe) {
+private fun LimiteSection(
+    detalhe          : CartaoDetalhe,
+    onAjustarLimite : () -> Unit,
+) {
     val spacing              = LocalSpacing.current
     val currencyFormatter    = rememberCurrencyFormatter()
-    val percentFormatter     = rememberPercentFormatter()
     val percentualUso        = detalhe.percentualUso
     val progressColor        = limiteProgressColor(percentualUso)
     val animatedPercentual by animateFloatAsState(
@@ -157,11 +167,9 @@ private fun LimiteSection(detalhe: CartaoDetalhe) {
                 text  = "Limite",
                 style = MaterialTheme.typography.titleLarge,
             )
-            Text(
-                text  = percentFormatter.format(percentualUso),
-                style = MaterialTheme.typography.titleMedium,
-                color = progressColor,
-            )
+            Button(onClick = onAjustarLimite) {
+                Text(text = "Ajustar limite")
+            }
         }
 
         LimiteProgressBar(
@@ -241,14 +249,6 @@ private fun DetalheMetric(
 @Composable
 private fun rememberCurrencyFormatter(): NumberFormat =
     remember { NumberFormat.getCurrencyInstance(PtBrLocale) }
-
-@Composable
-private fun rememberPercentFormatter(): NumberFormat =
-    remember {
-        NumberFormat.getPercentInstance(PtBrLocale).apply {
-            maximumFractionDigits = 0
-        }
-    }
 
 private fun tituloCartao(cartao: Cartao): String =
     if (cartao.finalNumero.isBlank()) "Cartão"
