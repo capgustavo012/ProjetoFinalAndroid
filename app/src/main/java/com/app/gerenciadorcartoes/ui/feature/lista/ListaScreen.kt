@@ -188,7 +188,31 @@ fun ListaContent(
                 subtitle = "Gerencie seus cartões cadastrados",
                 large    = true,
                 actions  = {
-                    // Menu overflow ⋮ — ações secundárias (logout, etc.)
+                    FilledIconButton(
+                        onClick = { onEvent(ListaEvent.NavegaParaNovo) },
+                        modifier = Modifier
+                            .shadow(
+                                elevation = spacing.smallMedium,
+                                shape     = CircleShape,
+                                clip      = false,
+                            )
+                            .border(
+                                width = spacing.extraSmall / 4,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.28f),
+                                shape = CircleShape,
+                            ),
+                        colors  = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor   = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    ) {
+                        Icon(
+                            imageVector        = Icons.Default.Add,
+                            contentDescription = "Novo cartão",
+                            modifier           = Modifier.size(iconSize.medium),
+                        )
+                    }
+                    // Menu overflow ⋮ — sempre o último item (mais à direita)
                     Box {
                         IconButton(onClick = { menuExpandido = true }) {
                             Icon(
@@ -214,30 +238,6 @@ fun ListaContent(
                                 },
                             )
                         }
-                    }
-                    FilledIconButton(
-                        onClick = { onEvent(ListaEvent.NavegaParaNovo) },
-                        modifier = Modifier
-                            .shadow(
-                                elevation = spacing.smallMedium,
-                                shape     = CircleShape,
-                                clip      = false,
-                            )
-                            .border(
-                                width = spacing.extraSmall / 4,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.28f),
-                                shape = CircleShape,
-                            ),
-                        colors  = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor   = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                    ) {
-                        Icon(
-                            imageVector        = Icons.Default.Add,
-                            contentDescription = "Novo cartão",
-                            modifier           = Modifier.size(iconSize.medium),
-                        )
                     }
                 },
             )
