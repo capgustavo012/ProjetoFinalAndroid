@@ -10,12 +10,13 @@ import com.app.gerenciadorcartoes.data.local.entity.CartaoEntity
 import com.app.gerenciadorcartoes.data.local.entity.CadastroUsuarioEntity
 
 @Database(
-    entities     = [CartaoEntity::class],
+    entities     = [CartaoEntity::class, CadastroUsuarioEntity::class],
     version      = 2,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cartaoDao(): CartaoDao
+    abstract fun cadastroUsuarioDao(): CadastroUsuarioDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
