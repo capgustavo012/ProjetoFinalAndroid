@@ -4,4 +4,31 @@
     <!-- Splash Screen -->
     <string name="splash_tagline">Seus cartões, no controle</string>
     <string name="splash_copyright">G3 Bank © 2026</string>
+
+    <!-- Login Screen -->
+    <string name="login_bem_vindo">Bem-vindo de volta</string>
+    <string name="login_subtitulo">Entre na sua conta para continuar</string>
+    <string name="login_campo_usuario">Usuário</string>
+    <string name="login_campo_senha">Senha</string>
+    <string name="login_btn_entrar">Entrar</string>
+    <string name="login_esqueceu_senha">Esqueceu a senha?</string>
+    <string name="login_nao_tem_conta">Não tem conta?</string>
+    <string name="login_btn_cadastrar">Cadastrar-se</string>
+    <string name="login_erro_usuario">Informe o usuário</string>
+    <string name="login_erro_senha">Informe a senha</string>
+
+    <!-- ConfirmacaoDialog — rótulos padrão dos botões -->
+    <string name="dialog_btn_confirmar">Confirmar</string>
+    <string name="dialog_btn_cancelar">Cancelar</string>
+
+    <!-- Lista Screen — TopAppBar -->
+    <string name="lista_menu_mais_opcoes">Mais opções</string>
+
+    <!-- Lista Screen — diálogos -->
+    <string name="lista_dialog_deslogar_titulo">Sair da conta</string>
+    <string name="lista_dialog_deslogar_mensagem">Deseja encerrar sua sessão?</string>
+    <string name="lista_dialog_deslogar_confirmar">Sair</string>
+    <string name="lista_dialog_excluir_titulo">Excluir cartão</string>
+    <string name="lista_dialog_excluir_mensagem">Deseja remover o cartão de %s?</string>
+    <string name="lista_dialog_excluir_confirmar">Excluir</string>
 </resources>

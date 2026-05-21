@@ -18,8 +18,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,14 +43,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.gerenciadorcartoes.R
 import com.app.gerenciadorcartoes.model.Cartao
 import com.app.gerenciadorcartoes.ui.components.AppLoading
 import com.app.gerenciadorcartoes.ui.components.AppScaffold
 import com.app.gerenciadorcartoes.ui.components.AppTopAppBar
 import com.app.gerenciadorcartoes.ui.components.CartaoTemplateCard
+import com.app.gerenciadorcartoes.ui.components.ConfirmacaoDialog
 import com.app.gerenciadorcartoes.ui.components.EmptyState
 import com.app.gerenciadorcartoes.ui.feature.lista.state.ListaUiState
 import com.app.gerenciadorcartoes.ui.theme.GerenciadorCartoesTheme
@@ -62,10 +66,11 @@ import com.app.gerenciadorcartoes.viewmodel.ListaViewModel
 // =============================================================================
 @Composable
 fun ListaScreen(
-    onNavigateToNovo : () -> Unit,
-    onNavigateToItem : (id: Long) -> Unit,
+    onNavigateToNovo   : () -> Unit,
+    onNavigateToItem   : (id: Long) -> Unit,
     onNavigateToEditar : (id: Long) -> Unit,
-    viewModel        : ListaViewModel = hiltViewModel(),
+    onDeslogar         : () -> Unit,
+    viewModel          : ListaViewModel = hiltViewModel(),
 ) {
     val uiState          by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -73,11 +78,12 @@ fun ListaScreen(
     LaunchedEffect(viewModel) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is ListaUiEvent.NavegaParaItem  -> onNavigateToItem(event.id)
+                is ListaUiEvent.NavegaParaItem   -> onNavigateToItem(event.id)
                 is ListaUiEvent.NavegaParaEditar -> onNavigateToEditar(event.id)
-                ListaUiEvent.NavegaParaNovo     -> onNavigateToNovo()
-                is ListaUiEvent.MostrarErro     -> snackbarHostState.showSnackbar(event.mensagem)
-                is ListaUiEvent.MostrarMensagem -> snackbarHostState.showSnackbar(event.mensagem)
+                ListaUiEvent.NavegaParaNovo      -> onNavigateToNovo()
+                ListaUiEvent.NavegaParaLogin     -> onDeslogar()
+                is ListaUiEvent.MostrarErro      -> snackbarHostState.showSnackbar(event.mensagem)
+                is ListaUiEvent.MostrarMensagem  -> snackbarHostState.showSnackbar(event.mensagem)
             }
         }
     }
@@ -100,24 +106,30 @@ fun ListaContent(
     onEvent           : (ListaEvent) -> Unit = {},
 ) {
     var cartaoParaExcluir by remember { mutableStateOf<Cartao?>(null) }
-    var cartaoParaAcoes by remember { mutableStateOf<Cartao?>(null) }
-    val spacing = LocalSpacing.current
+    var cartaoParaAcoes   by remember { mutableStateOf<Cartao?>(null) }
+    var confirmarDeslogar by remember { mutableStateOf(false) }
+    var menuExpandido     by remember { mutableStateOf(false) }
+    val spacing  = LocalSpacing.current
     val iconSize = LocalIconSize.current
 
+    // ── Diálogo: confirmar logout ─────────────────────────────────────────────
+    if (confirmarDeslogar) {
+        ConfirmacaoDialog(
+            titulo        = stringResource(R.string.lista_dialog_deslogar_titulo),
+            mensagem      = stringResource(R.string.lista_dialog_deslogar_mensagem),
+            textConfirmar = stringResource(R.string.lista_dialog_deslogar_confirmar),
+            onConfirmar   = { onEvent(ListaEvent.Deslogar) }
+        )
+    }
+
     if (cartaoParaExcluir != null) {
-        AlertDialog(
-            onDismissRequest = { cartaoParaExcluir = null },
-            title   = { Text("Excluir cartão") },
-            text    = { Text("Deseja remover o cartão de ${cartaoParaExcluir!!.nomeTitular}?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onEvent(ListaEvent.ExcluirCartao(cartaoParaExcluir!!.id))
-                    cartaoParaExcluir = null
-                }) { Text("Excluir") }
-            },
-            dismissButton = {
-                TextButton(onClick = { cartaoParaExcluir = null }) { Text("Cancelar") }
-            },
+        val cartao = cartaoParaExcluir!!
+        ConfirmacaoDialog(
+            titulo        = "Excluir cartão",
+            mensagem      = "Deseja remover o cartão de ${cartao.nomeTitular}?",
+            textConfirmar = "Excluir",
+            onConfirmar   = { onEvent(ListaEvent.ExcluirCartao(cartao.id)) },
+            onDismiss     = { cartaoParaExcluir = null },
         )
     }
 
@@ -176,6 +188,33 @@ fun ListaContent(
                 subtitle = "Gerencie seus cartões cadastrados",
                 large    = true,
                 actions  = {
+                    // Menu overflow ⋮ — ações secundárias (logout, etc.)
+                    Box {
+                        IconButton(onClick = { menuExpandido = true }) {
+                            Icon(
+                                imageVector        = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.lista_menu_mais_opcoes),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded         = menuExpandido,
+                            onDismissRequest = { menuExpandido = false },
+                        ) {
+                            DropdownMenuItem(
+                                text        = { Text(stringResource(R.string.lista_dialog_deslogar_titulo)) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector        = Icons.AutoMirrored.Filled.ExitToApp,
+                                        contentDescription = null,
+                                    )
+                                },
+                                onClick = {
+                                    menuExpandido = false
+                                    confirmarDeslogar = true
+                                },
+                            )
+                        }
+                    }
                     FilledIconButton(
                         onClick = { onEvent(ListaEvent.NavegaParaNovo) },
                         modifier = Modifier
