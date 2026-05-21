@@ -2,4 +2,14 @@
 <resources>
 
     <style name="Theme.GerenciadorCartoes" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.GerenciadorCartoes.Splash" parent="Theme.SplashScreen">
+        <!-- Fundo completo da tela — navy profundo -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- Círculo atrás do ícone — roxo primário (visível sobre o navy) -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_icon_background</item>
+        <!-- Ícone estático — sem AnimatedVectorDrawable, sem corte -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_static</item>
+        <item name="postSplashScreenTheme">@style/Theme.GerenciadorCartoes</item>
+    </style>
 </resources>

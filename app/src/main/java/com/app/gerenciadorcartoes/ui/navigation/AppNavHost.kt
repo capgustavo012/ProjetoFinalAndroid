@@ -9,6 +9,7 @@ import com.app.gerenciadorcartoes.ui.feature.cadastrousuario.CadastroUsuarioScre
 import com.app.gerenciadorcartoes.ui.feature.detalhe.DetalheScreen
 import com.app.gerenciadorcartoes.ui.feature.lista.ListaScreen
 import com.app.gerenciadorcartoes.ui.feature.login.LoginScreen
+import com.app.gerenciadorcartoes.ui.feature.splash.SplashScreen
 
 @Composable
 fun AppNavHost() {
@@ -16,8 +17,18 @@ fun AppNavHost() {
 
     NavHost(
         navController    = navController,
-        startDestination = LoginRoute,
+        startDestination = SplashRoute,       // ← splash como início
     ) {
+
+        composable<SplashRoute> {
+            SplashScreen(
+                navigateToLogin = {
+                    navController.navigate(LoginRoute) {
+                        popUpTo<SplashRoute> { inclusive = true }  // remove splash da back stack
+                    }
+                },
+            )
+        }
 
         composable<LoginRoute> {
             LoginScreen(
