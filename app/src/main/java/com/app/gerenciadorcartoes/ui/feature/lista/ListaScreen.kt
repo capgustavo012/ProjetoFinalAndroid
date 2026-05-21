@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -21,12 +20,11 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -41,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +54,6 @@ import com.app.gerenciadorcartoes.ui.components.ConfirmacaoDialog
 import com.app.gerenciadorcartoes.ui.components.EmptyState
 import com.app.gerenciadorcartoes.ui.feature.lista.state.ListaUiState
 import com.app.gerenciadorcartoes.ui.theme.GerenciadorCartoesTheme
-import com.app.gerenciadorcartoes.ui.theme.LocalIconSize
 import com.app.gerenciadorcartoes.ui.theme.LocalSpacing
 import com.app.gerenciadorcartoes.viewmodel.ListaViewModel
 
@@ -109,8 +105,7 @@ fun ListaContent(
     var cartaoParaAcoes   by remember { mutableStateOf<Cartao?>(null) }
     var confirmarDeslogar by remember { mutableStateOf(false) }
     var menuExpandido     by remember { mutableStateOf(false) }
-    val spacing  = LocalSpacing.current
-    val iconSize = LocalIconSize.current
+    val spacing = LocalSpacing.current
 
     // ── Diálogo: confirmar logout ─────────────────────────────────────────────
     if (confirmarDeslogar) {
@@ -125,9 +120,9 @@ fun ListaContent(
     if (cartaoParaExcluir != null) {
         val cartao = cartaoParaExcluir!!
         ConfirmacaoDialog(
-            titulo        = "Excluir cartão",
-            mensagem      = "Deseja remover o cartão de ${cartao.nomeTitular}?",
-            textConfirmar = "Excluir",
+            titulo        = stringResource(R.string.lista_dialog_excluir_titulo),
+            mensagem      = stringResource(R.string.lista_dialog_excluir_mensagem, cartao.nomeTitular),
+            textConfirmar = stringResource(R.string.lista_dialog_excluir_confirmar),
             onConfirmar   = { onEvent(ListaEvent.ExcluirCartao(cartao.id)) },
             onDismiss     = { cartaoParaExcluir = null },
         )
@@ -144,7 +139,7 @@ fun ListaContent(
                     .padding(bottom = spacing.medium),
             ) {
                 ListItem(
-                    headlineContent = { Text("Editar cartão") },
+                    headlineContent = { Text(stringResource(R.string.lista_acao_editar)) },
                     leadingContent  = {
                         Icon(
                             imageVector        = Icons.Default.Edit,
@@ -160,7 +155,7 @@ fun ListaContent(
                 ListItem(
                     headlineContent = {
                         Text(
-                            text  = "Excluir cartão",
+                            text  = stringResource(R.string.lista_dialog_excluir_titulo),
                             color = MaterialTheme.colorScheme.error,
                         )
                     },
@@ -182,37 +177,28 @@ fun ListaContent(
 
     AppScaffold(
         snackbarHostState    = snackbarHostState,
-        topBar               = {
+        // FAB posicionado aqui seguindo o padrão Material Design 3:
+        // a ação primária de criação pertence ao FAB, não à TopAppBar.
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick        = { onEvent(ListaEvent.NavegaParaNovo) },
+                shape          = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor   = MaterialTheme.colorScheme.onPrimary,
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.lista_fab_novo_cartao),
+                )
+            }
+        },
+        topBar = {
             AppTopAppBar(
-                title    = "Meus Cartões",
-                subtitle = "Gerencie seus cartões cadastrados",
+                title    = stringResource(R.string.lista_titulo),
+                subtitle = stringResource(R.string.lista_subtitulo),
                 large    = true,
                 actions  = {
-                    FilledIconButton(
-                        onClick = { onEvent(ListaEvent.NavegaParaNovo) },
-                        modifier = Modifier
-                            .shadow(
-                                elevation = spacing.smallMedium,
-                                shape     = CircleShape,
-                                clip      = false,
-                            )
-                            .border(
-                                width = spacing.extraSmall / 4,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.28f),
-                                shape = CircleShape,
-                            ),
-                        colors  = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor   = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                    ) {
-                        Icon(
-                            imageVector        = Icons.Default.Add,
-                            contentDescription = "Novo cartão",
-                            modifier           = Modifier.size(iconSize.medium),
-                        )
-                    }
-                    // Menu overflow ⋮ — sempre o último item (mais à direita)
+                    // Menu overflow ⋮ — ações secundárias (logout, etc.)
                     Box {
                         IconButton(onClick = { menuExpandido = true }) {
                             Icon(
@@ -246,8 +232,8 @@ fun ListaContent(
         when {
             uiState.carregando        -> AppLoading()
             uiState.cartoes.isEmpty() -> EmptyState(
-                title    = "Você ainda não tem cartões",
-                subtitle = "Adicione seu primeiro cartão para começar",
+                title    = stringResource(R.string.lista_vazia_titulo),
+                subtitle = stringResource(R.string.lista_vazia_subtitulo),
                 modifier = Modifier
                     .padding(paddingValues)
                     .background(
@@ -314,7 +300,7 @@ private fun CartaoItem(
         ) {
             Icon(
                 imageVector        = Icons.Default.MoreVert,
-                contentDescription = "Menu do cartão",
+                contentDescription = stringResource(R.string.lista_menu_cartao),
                 tint               = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.95f),
             )
         }
