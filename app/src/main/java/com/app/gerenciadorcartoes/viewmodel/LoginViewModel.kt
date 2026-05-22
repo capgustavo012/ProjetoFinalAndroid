@@ -2,6 +2,8 @@ package com.app.gerenciadorcartoes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.gerenciadorcartoes.data.local.session.SessionManager
+import com.app.gerenciadorcartoes.repository.CadastroUsuarioRepository
 import com.app.gerenciadorcartoes.ui.feature.login.LoginEvent
 import com.app.gerenciadorcartoes.ui.feature.login.LoginUiEvent
 import com.app.gerenciadorcartoes.ui.feature.login.state.LoginUiState
@@ -16,7 +18,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val sessionManager            : SessionManager,
+    private val cadastroUsuarioRepository : CadastroUsuarioRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -44,10 +49,13 @@ class LoginViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(carregando = true) }
             runCatching {
-                verificarCredenciais(
-                    usuario = _uiState.value.usuario,
-                    senha   = _uiState.value.senha,
+                val credenciaisValidas = cadastroUsuarioRepository.verificarCredenciais(
+                    email = _uiState.value.usuario,
+                    senha = _uiState.value.senha,
                 )
+                if (!credenciaisValidas) throw Exception("Usuário ou senha incorretos")
+                sessionManager.saveSession(_uiState.value.usuario)
+                _uiState.update { it.copy(carregando = false) }
                 _uiEvent.send(LoginUiEvent.NavegaParaLista)
             }.onFailure { erro ->
                 _uiState.update { it.copy(carregando = false) }
@@ -72,16 +80,5 @@ class LoginViewModel @Inject constructor() : ViewModel() {
             valido = false
         }
         return valido
-    }
-
-    /**
-     * Simulação local de autenticação.
-     * Substitua pelo repositório de autenticação real quando disponível.
-     */
-    @Throws(Exception::class)
-    private fun verificarCredenciais(usuario: String, senha: String) {
-        if (usuario != "gustavo" || senha != "1234") {
-            throw Exception("Usuário ou senha incorretos")
-        }
     }
 }

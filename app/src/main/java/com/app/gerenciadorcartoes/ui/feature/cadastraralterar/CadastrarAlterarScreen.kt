@@ -29,7 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.gerenciadorcartoes.ui.components.AppLoading
 import com.app.gerenciadorcartoes.ui.components.AppScaffold
@@ -37,7 +37,6 @@ import com.app.gerenciadorcartoes.ui.components.AppTopAppBar
 import com.app.gerenciadorcartoes.ui.components.CartaoTemplateMini
 import com.app.gerenciadorcartoes.ui.components.CartaoTemplateCard
 import com.app.gerenciadorcartoes.ui.components.todosTemplates
-import com.app.gerenciadorcartoes.ui.components.templateConfigById
 import com.app.gerenciadorcartoes.ui.feature.cadastraralterar.state.CadastrarAlterarUiState
 import com.app.gerenciadorcartoes.ui.theme.GerenciadorCartoesTheme
 import com.app.gerenciadorcartoes.ui.theme.LocalSpacing

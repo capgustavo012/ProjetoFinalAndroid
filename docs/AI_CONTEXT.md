@@ -8,7 +8,7 @@
 
 ## Histórico de Alterações
 
-<!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
+- <!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
 - 2026-05-20 — Splash ajustada: logo reduzida em `ic_splash_logo_static` para melhor proporção visual no lançamento
 - 2026-05-19 — Tela `Detalhe` simplificada para leitura: removidas ações de Editar/Excluir do AppBar e limpeza de eventos/UI events relacionados no fluxo da feature
 - 2026-05-19 — Botão de 3 pontinhos na Lista atualizado para menu de ações em bottom sheet (Editar e Excluir), evitando popup deslocado sobre/abaixo do card
@@ -38,6 +38,7 @@
 | Arquitetura | MVVM · Fluxo de Dados Unidirecional · Separação em camadas |
 | DI | Hilt 2.59.2 (KSP — sem KAPT) |
 | Persistência | Room 2.8.4 (reativo via `Flow`) |
+| Sessão | DataStore Preferences + Android Keystore AES-256-GCM (`DataStoreEncryptor`) |
 | Navegação | Navigation Compose 2.9.0 — **apenas rotas type-safe** |
 | Min SDK | 28 (Android 9 Pie) |
 | Target/Compile SDK | 36 |
@@ -60,12 +61,24 @@ app/src/main/java/com/app/gerenciadorcartoes/
 │   ├── converter/                    (vazio — reservado para @TypeConverters)
 │   ├── dao/CartaoDao.kt              @Dao — leituras reativas com Flow + escritas suspend
 │   ├── database/AppDatabase.kt       @Database v1 — expõe cartaoDao()
-│   └── entity/CartaoEntity.kt        @Entity("cartoes")
+│   ├── entity/CartaoEntity.kt        @Entity("cartoes")
+│   ├── security/
+│   │   ├── DataStoreEncryptor.kt     Android Keystore AES-256-GCM — cifra valores PII no DataStore
+│   │   └── SenhaHasher.kt            PBKDF2/HmacSHA-256 com salt aleatório — hash de senhas
+│   └── session/
+│       ├── SessionManager.kt         Contrato de sessão persistente
+│       └── SessionManagerImpl.kt     DataStore — única fonte de verdade da sessão
 │
 ├── repository/
+│   ├── CadastroUsuarioRepository.kt  Interface — apenas tipos de domínio (CadastroUsuario)
+│   ├── CadastroUsuarioRepositoryImpl.kt @Singleton — delega para CadastroUsuarioDao + mapper
+│   ├── CartaoDetalheRepository.kt
+│   ├── CartaoDetalheRepositoryImpl.kt
 │   ├── CartaoRepository.kt           Interface — apenas tipos de domínio
 │   ├── CartaoRepositoryImpl.kt       @Singleton — delega para CartaoDao + mapper
-│   └── mapper/CartaoMapper.kt        funções de extensão toDomain() / toEntity()
+│   └── mapper/
+│       ├── CadastroUsuarioMapper.kt  funções de extensão toDomain() / toEntity()
+│       └── CartaoMapper.kt           funções de extensão toDomain() / toEntity()
 │
 ├── network/
 │   └── service/ApiService.kt         Placeholder Retrofit — sem endpoints ativos
@@ -82,13 +95,17 @@ app/src/main/java/com/app/gerenciadorcartoes/
     │   ├── login/                    LoginEvent · LoginUiEvent · LoginScreen · state/LoginUiState
     │   ├── lista/                    ListaEvent · ListaUiEvent · ListaScreen · state/ListaUiState
     │   ├── detalhe/                  DetalheEvent · DetalheUiEvent · DetalheScreen · state/DetalheUiState
-    │   └── cadastraralterar/         CadastrarAlterarEvent · CadastrarAlterarUiEvent
-    │                                 CadastrarAlterarScreen · state/CadastrarAlterarUiState
+    │   ├── cadastraralterar/         CadastrarAlterarEvent · CadastrarAlterarUiEvent
+    │   │                             CadastrarAlterarScreen · state/CadastrarAlterarUiState
+    │   └── cadastrousuario/          CadastroUsuarioEvent · CadastroUsuarioUiEvent
+    │                                 CadastroUsuarioScreen · state/CadastroUsuarioUiState
     └── viewmodel/
         ├── LoginViewModel.kt
         ├── ListaViewModel.kt
         ├── DetalheViewModel.kt
-        └── CadastrarAlterarViewModel.kt
+        ├── CadastrarAlterarViewModel.kt
+        ├── CadastroUsuarioViewModel.kt
+        └── SplashViewModel.kt
 ```
 
 > **ViewModels ficam em `viewmodel/`** — irmão de `ui/`, não dentro dela.  
@@ -346,9 +363,13 @@ composable<XRoute> { XScreen(navigateBack = { navController.popBackStack() }) }
 
 | Objeto/Classe | Significado | Início? |
 |---|---|---|
-| `ListaRoute` | Lista de todos os cartões | ✅ sim |
+| `SplashRoute` | Verificação de sessão na abertura do app | ✅ sim |
+| `LoginRoute` | Autenticação do usuário | não |
+| `ListaRoute` | Lista de todos os cartões | não |
 | `DetalheRoute(id: Long)` | Detalhe somente leitura | não |
+| `AjustarLimiteRoute(id: Long)` | Ajuste de limite de um cartão | não |
 | `CadastrarAlterarRoute(id: Long = 0L)` | Criar (`id=0`) ou editar (`id>0`) | não |
+| `CadastroUsuarioRoute` | Cadastro de novo usuário | não |
 
 ---
 
@@ -483,6 +504,8 @@ Este é o único arquivo do projeto que requer essa anotação.
 - **Coletiva** — não interrompe no primeiro erro; todos os erros de campo são definidos simultaneamente.
 - Erro por campo armazenado como `erro<NomeCampo>: String?` no `UiState`.
 - O erro é limpo para `null` quando o usuário edita o campo correspondente.
+- Para `email`, além de obrigatório, o formato é validado (`nome@dominio.tld`) durante digitação e no submit.
+- `senha` e `confirmarSenha` possuem validação cruzada: divergência gera `erroConfirmarSenha` em tempo de digitação e no submit.
 - Campos numéricos do formulário são armazenados como `String` no `UiState` (vinculam diretamente ao `OutlinedTextField`).
 - `finalNumero` é limitado a 4 caracteres no nível do manipulador de eventos: `event.valor.take(4)`.
 
@@ -499,9 +522,12 @@ Gerenciado via `gradle/libs.versions.toml`. Entradas principais:
 | `libs.androidx.room.runtime` | `androidx.room:room-runtime` | 2.8.4 |
 | `libs.androidx.room.ktx` | `androidx.room:room-ktx` | 2.8.4 |
 | `libs.androidx.room.compiler` | `androidx.room:room-compiler` (ksp) | 2.8.4 |
+| `libs.androidx-datastore-preferences` | `androidx.datastore:datastore-preferences` | 1.2.1 |
 | `libs.androidx.navigation.compose` | `androidx.navigation:navigation-compose` | 2.9.0 |
 | `libs.androidx.hilt.navigation.compose` | `androidx.hilt:hilt-navigation-compose` | 1.2.0 |
 | `libs.retrofit` | `com.squareup.retrofit2:retrofit` | 3.0.0 |
+| `libs.retrofit.converter.gson` | `com.squareup.retrofit2:converter-gson` | 3.0.0 |
+| `libs.retrofit.kotlinx.serialization.converter` | `com.squareup.retrofit2:converter-kotlinx-serialization` | 3.0.0 |
 | `libs.okhttp.logging.interceptor` | `com.squareup.okhttp3:logging-interceptor` | 5.3.2 |
 | `libs.kotlinx.serialization.json` | `org.jetbrains.kotlinx:kotlinx-serialization-json` | 1.11.0 |
 

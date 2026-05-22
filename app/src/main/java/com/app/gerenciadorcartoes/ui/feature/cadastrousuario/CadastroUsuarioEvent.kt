@@ -12,7 +12,14 @@ sealed interface CadastroUsuarioEvent {
     data class SenhaAlterada(val valor: String)          : CadastroUsuarioEvent
     data class ConfirmarSenhaAlterada(val valor: String) : CadastroUsuarioEvent
 
-    data object Cadastrar                                : CadastroUsuarioEvent
+    /** Avança para a próxima etapa após validar a etapa atual. Na última etapa, submete o cadastro. */
+    data object AvancarEtapa  : CadastroUsuarioEvent
 
-    data object Voltar                                   : CadastroUsuarioEvent
+    /** Retorna para a etapa anterior sem validação. */
+    data object VoltarEtapa   : CadastroUsuarioEvent
+
+    /** Informa que o foco no campo com erro foi concluído; limpa a flag [focarPrimeiroCampoComErro]. */
+    data object FocoRealizado : CadastroUsuarioEvent
+
+    data object Voltar        : CadastroUsuarioEvent
 }

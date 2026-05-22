@@ -26,6 +26,14 @@ Interação do usuário
        │  Flow<Entity> / suspend
        ▼
     CartaoEntity                   ← representação de armazenamento
+
+Sessão (autenticação persistente)
+       │
+       ▼
+    SessionManager (interface)
+       │  DataStore<Preferences> + fallback criptografado
+       ▼
+    SessionManagerImpl
 ```
 
 ---
@@ -168,6 +176,8 @@ A camada de UI **apenas renderiza `UiState`** e **despacha `XEvent`**. Não cont
 | `ui/navigation/` | Declarações de rotas (`Routes.kt`) e configuração do `NavHost` (`AppNavHost.kt`) |
 | `ui/feature/<nome>/` | UI com escopo de feature — `XScreen`, `XContent`, `XEvent`, `XUiEvent`, `state/XUiState` |
 
+Features atuais incluem `login`, `lista`, `detalhe`, `cadastraralterar` e `cadastrousuario`.
+
 ---
 
 ## 3. Padrão Screen / Content / Preview
@@ -278,6 +288,11 @@ private val id: Long = route.id
 
 `CadastrarAlterarRoute` usa `id = 0L` como sentinela: `id == 0L` → modo inserção, `id > 0L` → modo edição. O ViewModel verifica `if (id != 0L) carregarCartao()` no `init` para pré-preencher o formulário condicionalmente.
 
+Gate de sessão no lançamento:
+- `SplashRoute` é o destino inicial.
+- `SplashViewModel` aguarda o tempo da splash e consulta `SessionManager.isLoggedIn()`.
+- Se `true`, emite `NavigateToLista`; se `false`, emite `NavigateToLogin`.
+
 ---
 
 ## 6. Injeção de Dependência (Hilt)
@@ -289,8 +304,11 @@ GerenciadorCartoesApp  (@HiltAndroidApp)
 │   ├── companion object @Provides
 │   │   ├── AppDatabase  → Room.databaseBuilder(context, "gerenciador-cartoes-db")
 │   │   └── CartaoDao    → AppDatabase.cartaoDao()
+│   │   ├── DataStore<Preferences> → session.preferences_pb
+│   │   └── EncryptedSharedPreferences("session_secure_prefs")
 │   └── @Binds @Singleton
 │       └── CartaoRepository ← CartaoRepositoryImpl
+│       └── SessionManager   ← SessionManagerImpl
 │
 └── NetworkModule  (@InstallIn SingletonComponent)  — object
     ├── @Provides Json           (ignoreUnknownKeys, coerceInputValues)
