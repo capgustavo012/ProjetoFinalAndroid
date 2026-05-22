@@ -176,6 +176,8 @@ A camada de UI **apenas renderiza `UiState`** e **despacha `XEvent`**. Não cont
 | `ui/navigation/` | Declarações de rotas (`Routes.kt`) e configuração do `NavHost` (`AppNavHost.kt`) |
 | `ui/feature/<nome>/` | UI com escopo de feature — `XScreen`, `XContent`, `XEvent`, `XUiEvent`, `state/XUiState` |
 
+Features atuais incluem `login`, `lista`, `detalhe`, `cadastraralterar` e `cadastrousuario`.
+
 ---
 
 ## 3. Padrão Screen / Content / Preview

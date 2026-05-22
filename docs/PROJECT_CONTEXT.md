@@ -60,6 +60,7 @@ Todos os campos têm valores padrão para que `Cartao()` possa ser usado como es
 | Lista | `ListaRoute` (destino inicial) | Lista reativa de todos os cartões; exclusão a partir da lista |
 | Detalhe | `DetalheRoute(id: Long)` | Visualização somente leitura; navegar para editar ou excluir |
 | Cadastrar / Alterar | `CadastrarAlterarRoute(id: Long)` | Formulário unificado — inserção (`id=0`) ou atualização (`id>0`) |
+| Cadastro de Usuário | `CadastroUsuarioRoute` | Formulário responsivo com abas, CEP automático e validação inline |
 
 ### Fluxo de navegação (fonte: `AppNavHost.kt`)
 

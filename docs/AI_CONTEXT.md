@@ -8,11 +8,15 @@
 
 ## Histórico de Alterações
 
-<!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
+- <!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
+- 2026-05-21 — Corrigida duplicação de indicador de validação nos campos `Senha` e `Confirmar senha` em `CadastroUsuarioScreen`
+- 2026-05-21 — `CadastroUsuarioScreen` aprimorada com animação de abas, foco automático entre campos e indicadores visuais de validação
+- 2026-05-21 — `CadastroUsuarioScreen` modernizada com abas Material 3, validação inline por campo e estados visuais para CEP
+- 2026-05-21 — `CadastroUsuarioScreen` reorganizada em cabeçalho + cards de seção com largura responsiva e textos externalizados
 - 2026-05-21 — Corrigido `ListaScreen`: botão Cancelar no diálogo de deslogar agora fecha o modal via `onDismiss`
 - 2026-05-21 — `retrofit-kotlinx-serialization-converter` migrado para artefato oficial do Retrofit 3 (`com.squareup.retrofit2:converter-kotlinx-serialization`)
 - 2026-05-21 — Dependência `converter-gson` padronizada para Version Catalog (`libs.retrofit.converter.gson`) no módulo `:app`
-fa- 2026-05-21 — Sessão persistente implementada com DataStore + EncryptedSharedPreferences; Splash decide Login/Lista e login/logout atualizam sessão
+- 2026-05-21 — Sessão persistente implementada com DataStore + EncryptedSharedPreferences; Splash decide Login/Lista e login/logout atualizam sessão
 - 2026-05-20 — Splash ajustada: logo reduzida em `ic_splash_logo_static` para melhor proporção visual no lançamento
 - 2026-05-19 — Tela `Detalhe` simplificada para leitura: removidas ações de Editar/Excluir do AppBar e limpeza de eventos/UI events relacionados no fluxo da feature
 - 2026-05-19 — Botão de 3 pontinhos na Lista atualizado para menu de ações em bottom sheet (Editar e Excluir), evitando popup deslocado sobre/abaixo do card
@@ -90,13 +94,16 @@ app/src/main/java/com/app/gerenciadorcartoes/
     │   ├── login/                    LoginEvent · LoginUiEvent · LoginScreen · state/LoginUiState
     │   ├── lista/                    ListaEvent · ListaUiEvent · ListaScreen · state/ListaUiState
     │   ├── detalhe/                  DetalheEvent · DetalheUiEvent · DetalheScreen · state/DetalheUiState
-    │   └── cadastraralterar/         CadastrarAlterarEvent · CadastrarAlterarUiEvent
-    │                                 CadastrarAlterarScreen · state/CadastrarAlterarUiState
+    │   ├── cadastraralterar/         CadastrarAlterarEvent · CadastrarAlterarUiEvent
+    │   │                             CadastrarAlterarScreen · state/CadastrarAlterarUiState
+    │   └── cadastrousuario/          CadastroUsuarioEvent · CadastroUsuarioUiEvent
+    │                                 CadastroUsuarioScreen · state/CadastroUsuarioUiState
     └── viewmodel/
         ├── LoginViewModel.kt
         ├── ListaViewModel.kt
         ├── DetalheViewModel.kt
         ├── CadastrarAlterarViewModel.kt
+        ├── CadastroUsuarioViewModel.kt
         └── SplashViewModel.kt
 ```
 

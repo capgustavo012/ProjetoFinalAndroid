@@ -17,6 +17,34 @@
     <string name="login_erro_usuario">Informe o usuário</string>
     <string name="login_erro_senha">Informe a senha</string>
 
+    <!-- CadastroUsuario Screen -->
+    <string name="cadastro_usuario_titulo">Cadastro de Usuário</string>
+    <string name="cadastro_usuario_subtitulo">Crie sua conta e preencha seus dados para começar</string>
+    <string name="cadastro_usuario_header_titulo">Vamos criar sua conta</string>
+    <string name="cadastro_usuario_header_subtitulo">Use um e-mail válido para seguir com o cadastro.</string>
+    <string name="cadastro_usuario_aba_dados_pessoais">Dados pessoais</string>
+    <string name="cadastro_usuario_aba_endereco">Endereço</string>
+    <string name="cadastro_usuario_aba_seguranca">Segurança</string>
+    <string name="cadastro_usuario_secao_dados_pessoais">Dados pessoais</string>
+    <string name="cadastro_usuario_secao_endereco">Endereço</string>
+    <string name="cadastro_usuario_secao_seguranca">Segurança</string>
+    <string name="cadastro_usuario_nome">Nome</string>
+    <string name="cadastro_usuario_cpf">CPF</string>
+    <string name="cadastro_usuario_cep">CEP</string>
+    <string name="cadastro_usuario_endereco">Endereço</string>
+    <string name="cadastro_usuario_numero">Número</string>
+    <string name="cadastro_usuario_bairro">Bairro</string>
+    <string name="cadastro_usuario_estado">Estado</string>
+    <string name="cadastro_usuario_email">E-mail</string>
+    <string name="cadastro_usuario_senha">Senha</string>
+    <string name="cadastro_usuario_confirmar_senha">Confirmar senha</string>
+    <string name="cadastro_usuario_btn_cadastrar">Cadastrar</string>
+    <string name="cadastro_usuario_buscando_cep">Buscando CEP</string>
+    <string name="cadastro_usuario_cep_dica">Digite o CEP para preencher endereço automaticamente</string>
+    <string name="cadastro_usuario_cd_mostrar_senha">Mostrar senha</string>
+    <string name="cadastro_usuario_cd_ocultar_senha">Ocultar senha</string>
+    <string name="cadastro_usuario_cd_buscando_cep">Buscando CEP</string>
+
     <!-- ConfirmacaoDialog — rótulos padrão dos botões -->
     <string name="dialog_btn_confirmar">Confirmar</string>
     <string name="dialog_btn_cancelar">Cancelar</string>
