@@ -2,7 +2,6 @@ package com.app.gerenciadorcartoes.ui.feature.lista
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -305,26 +305,23 @@ private fun CartaoItem(
             cartao  = cartao,
             onClick = onClick,
         )
-        IconButton(
-            onClick  = onMenuClick,
-            modifier = Modifier
+        // Surface MD3: fundo claro elevado sobre o cartão colorido —
+        // tonalElevation adiciona tinte primário; shadowElevation cria sombra física.
+        // Padrão recomendado pelo Material Design 3 para ações sobre conteúdo colorido.
+        Surface(
+            modifier        = Modifier
                 .align(Alignment.TopEnd)
-                .padding(top = spacing.small, end = spacing.small)
-                .background(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.24f),
-                    shape = CircleShape,
-                )
-                .border(
-                    width = spacing.extraSmall / 4,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
-                    shape = CircleShape,
-                ),
+                .padding(top = spacing.small, end = spacing.small),
+            shape           = CircleShape,
+            tonalElevation  = spacing.extraSmall,
+            shadowElevation = spacing.extraSmall / 2,
         ) {
-            Icon(
-                imageVector        = Icons.Default.MoreVert,
-                contentDescription = stringResource(R.string.lista_menu_cartao),
-                tint               = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.95f),
-            )
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    imageVector        = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.lista_menu_cartao),
+                )
+            }
         }
     }
 }
