@@ -9,6 +9,11 @@
 ## Histórico de Alterações
 
 - <!-- Insira uma linha no início a cada atualização: "- YYYY-MM-DD — descrição" -->
+- 2026-05-22 — `CadastroUsuarioScreen` corrigida: progresso sem percentual, erros inline por campo via `MarcarCamposObrigatorios` event ao tentar avançar sem preencher, subtítulos específicos por etapa e remoção de código redundante
+- 2026-05-22 — `CadastroUsuarioViewModel` agora valida formato de e-mail e inconsistência entre senha/confirmação em tempo de digitação e no submit
+- 2026-05-22 — `CadastroUsuarioScreen` evoluída para wizard: progresso percentual no topo, bloqueio visual/click de etapas futuras e microtexto dinâmico na CTA
+- 2026-05-21 — Máscaras aplicadas em `CadastroUsuario` para CPF/CEP/número/UF com teclado contextual por campo e testes unitários de formatação
+- 2026-05-21 — `CadastroUsuarioScreen` migrada de abas para stepper visual guiado com ações `Anterior/Próximo/Cadastrar`
 - 2026-05-21 — Corrigida duplicação de indicador de validação nos campos `Senha` e `Confirmar senha` em `CadastroUsuarioScreen`
 - 2026-05-21 — `CadastroUsuarioScreen` aprimorada com animação de abas, foco automático entre campos e indicadores visuais de validação
 - 2026-05-21 — `CadastroUsuarioScreen` modernizada com abas Material 3, validação inline por campo e estados visuais para CEP
@@ -503,6 +508,8 @@ Este é o único arquivo do projeto que requer essa anotação.
 - **Coletiva** — não interrompe no primeiro erro; todos os erros de campo são definidos simultaneamente.
 - Erro por campo armazenado como `erro<NomeCampo>: String?` no `UiState`.
 - O erro é limpo para `null` quando o usuário edita o campo correspondente.
+- Para `email`, além de obrigatório, o formato é validado (`nome@dominio.tld`) durante digitação e no submit.
+- `senha` e `confirmarSenha` possuem validação cruzada: divergência gera `erroConfirmarSenha` em tempo de digitação e no submit.
 - Campos numéricos do formulário são armazenados como `String` no `UiState` (vinculam diretamente ao `OutlinedTextField`).
 - `finalNumero` é limitado a 4 caracteres no nível do manipulador de eventos: `event.valor.take(4)`.
 

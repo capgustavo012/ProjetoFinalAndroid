@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,52 +22,47 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.gerenciadorcartoes.R
+import com.app.gerenciadorcartoes.ui.components.AppFormField
 import com.app.gerenciadorcartoes.ui.components.AppLoading
 import com.app.gerenciadorcartoes.ui.components.AppScaffold
+import com.app.gerenciadorcartoes.ui.components.AppSectionCard
 import com.app.gerenciadorcartoes.ui.components.AppTopAppBar
 import com.app.gerenciadorcartoes.ui.feature.cadastrousuario.state.CadastroUsuarioUiState
 import com.app.gerenciadorcartoes.ui.theme.GerenciadorCartoesTheme
@@ -76,11 +70,7 @@ import com.app.gerenciadorcartoes.ui.theme.LocalIconSize
 import com.app.gerenciadorcartoes.ui.theme.LocalSpacing
 import com.app.gerenciadorcartoes.viewmodel.CadastroUsuarioViewModel
 
-private enum class CadastroUsuarioTab(val titleRes: Int) {
-    DadosPessoais(R.string.cadastro_usuario_aba_dados_pessoais),
-    Endereco(R.string.cadastro_usuario_aba_endereco),
-    Seguranca(R.string.cadastro_usuario_aba_seguranca),
-}
+// ── Tier 1: Screen ────────────────────────────────────────────────────────────
 
 @Composable
 fun CadastroUsuarioScreen(
@@ -93,56 +83,60 @@ fun CadastroUsuarioScreen(
     LaunchedEffect(viewModel) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                CadastroUsuarioUiEvent.NavigateBack -> navigateBack()
-                is CadastroUsuarioUiEvent.MostrarErro -> snackbarHostState.showSnackbar(event.mensagem)
+                CadastroUsuarioUiEvent.NavigateBack       -> navigateBack()
+                is CadastroUsuarioUiEvent.MostrarErro     -> snackbarHostState.showSnackbar(event.mensagem)
                 is CadastroUsuarioUiEvent.MostrarMensagem -> snackbarHostState.showSnackbar(event.mensagem)
             }
         }
     }
 
     CadastroUsuarioContent(
-        uiState = uiState,
+        uiState           = uiState,
         snackbarHostState = snackbarHostState,
-        onEvent = viewModel::onEvent,
+        onEvent           = viewModel::onEvent,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ── Tier 2: Content ───────────────────────────────────────────────────────────
+
 @Composable
 fun CadastroUsuarioContent(
-    uiState: CadastroUsuarioUiState = CadastroUsuarioUiState(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    onEvent: (CadastroUsuarioEvent) -> Unit = {},
+    uiState           : CadastroUsuarioUiState = CadastroUsuarioUiState(),
+    snackbarHostState : SnackbarHostState      = remember { SnackbarHostState() },
+    onEvent           : (CadastroUsuarioEvent) -> Unit = {},
 ) {
-    val spacing = LocalSpacing.current
-    val iconSize = LocalIconSize.current
+    val spacing      = LocalSpacing.current
+    val iconSize     = LocalIconSize.current
     val focusManager = LocalFocusManager.current
-    val tabs = CadastroUsuarioTab.entries
+    val steps        = CadastroUsuarioTab.entries
 
-    var abaSelecionada by rememberSaveable { mutableIntStateOf(0) }
-    var senhaVisivel by remember { mutableStateOf(false) }
-    var confirmarSenhaVisivel by remember { mutableStateOf(false) }
-    var estavaBuscandoCep by remember { mutableStateOf(false) }
-
-    val nomeFocusRequester = remember { FocusRequester() }
-    val cpfFocusRequester = remember { FocusRequester() }
-    val emailFocusRequester = remember { FocusRequester() }
-    val cepFocusRequester = remember { FocusRequester() }
-    val enderecoFocusRequester = remember { FocusRequester() }
-    val numberFocusRequester = remember { FocusRequester() }
-    val bairroFocusRequester = remember { FocusRequester() }
-    val estadoFocusRequester = remember { FocusRequester() }
-    val senhaFocusRequester = remember { FocusRequester() }
+    // ── FocusRequesters — responsabilidade exclusiva da UI ──
+    val nomeFocusRequester           = remember { FocusRequester() }
+    val cpfFocusRequester            = remember { FocusRequester() }
+    val emailFocusRequester          = remember { FocusRequester() }
+    val cepFocusRequester            = remember { FocusRequester() }
+    val enderecoFocusRequester       = remember { FocusRequester() }
+    val numberFocusRequester         = remember { FocusRequester() }
+    val bairroFocusRequester         = remember { FocusRequester() }
+    val estadoFocusRequester         = remember { FocusRequester() }
+    val senhaFocusRequester          = remember { FocusRequester() }
     val confirmarSenhaFocusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(abaSelecionada) {
-        when (tabs[abaSelecionada]) {
+    // Estado puramente visual — não pertence ao ViewModel
+    var senhaVisivel          by remember { mutableStateOf(false) }
+    var confirmarSenhaVisivel by remember { mutableStateOf(false) }
+    var estavaBuscandoCep     by remember { mutableStateOf(false) }
+
+    // ── Foca o primeiro campo ao mudar de etapa ──
+    LaunchedEffect(uiState.etapaAtual) {
+        when (steps[uiState.etapaAtual]) {
             CadastroUsuarioTab.DadosPessoais -> nomeFocusRequester.requestFocus()
-            CadastroUsuarioTab.Endereco -> cepFocusRequester.requestFocus()
-            CadastroUsuarioTab.Seguranca -> senhaFocusRequester.requestFocus()
+            CadastroUsuarioTab.Endereco      -> cepFocusRequester.requestFocus()
+            CadastroUsuarioTab.Seguranca     -> senhaFocusRequester.requestFocus()
         }
     }
 
+    // ── Foca Número após busca de CEP bem-sucedida ──
     LaunchedEffect(uiState.buscandoCep) {
         if (estavaBuscandoCep && !uiState.buscandoCep && uiState.erroCep == null) {
             numberFocusRequester.requestFocus()
@@ -150,13 +144,35 @@ fun CadastroUsuarioContent(
         estavaBuscandoCep = uiState.buscandoCep
     }
 
+    // ── Foca o primeiro campo com erro (ViewModel sinaliza via flag) ──
+    // O LaunchedEffect re-dispara APÓS a recomposição com os erros já aplicados no estado.
+    LaunchedEffect(uiState.focarPrimeiroCampoComErro) {
+        if (!uiState.focarPrimeiroCampoComErro) return@LaunchedEffect
+        focarPrimeiroCampoComErro(
+            etapaAtual               = uiState.etapaAtual,
+            uiState                  = uiState,
+            steps                    = steps,
+            nomeFocusRequester       = nomeFocusRequester,
+            cpfFocusRequester        = cpfFocusRequester,
+            emailFocusRequester      = emailFocusRequester,
+            cepFocusRequester        = cepFocusRequester,
+            enderecoFocusRequester   = enderecoFocusRequester,
+            numberFocusRequester     = numberFocusRequester,
+            bairroFocusRequester     = bairroFocusRequester,
+            estadoFocusRequester     = estadoFocusRequester,
+            senhaFocusRequester      = senhaFocusRequester,
+            confirmarSenhaFocusRequester = confirmarSenhaFocusRequester,
+        )
+        onEvent(CadastroUsuarioEvent.FocoRealizado)
+    }
+
     AppScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
             AppTopAppBar(
-                title = stringResource(R.string.app_name),
-                subtitle = stringResource(R.string.cadastro_usuario_subtitulo),
-                large = true,
+                title          = stringResource(R.string.app_name),
+                subtitle       = stringResource(R.string.cadastro_usuario_subtitulo),
+                large          = true,
                 onNavigateBack = { onEvent(CadastroUsuarioEvent.Voltar) },
             )
         },
@@ -194,271 +210,335 @@ fun CadastroUsuarioContent(
                             .widthIn(max = contentWidth),
                         verticalArrangement = Arrangement.spacedBy(spacing.medium),
                     ) {
+                        // ── Cabeçalho da tela ──────────────────────────────────────────────────
                         Surface(
-                            shape = MaterialTheme.shapes.large,
-                            tonalElevation = spacing.small,
+                            shape           = MaterialTheme.shapes.large,
+                            tonalElevation  = spacing.small,
                             shadowElevation = spacing.extraSmall,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier        = Modifier.fillMaxWidth(),
                         ) {
                             Column(
-                                modifier = Modifier.padding(spacing.medium),
-                                verticalArrangement = Arrangement.spacedBy(spacing.small),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier                = Modifier.padding(spacing.medium),
+                                verticalArrangement     = Arrangement.spacedBy(spacing.small),
+                                horizontalAlignment     = Alignment.CenterHorizontally,
                             ) {
                                 Box(
-                                    modifier = Modifier
+                                    modifier           = Modifier
                                         .size(iconSize.extraLarge * 2)
                                         .background(MaterialTheme.colorScheme.primary, CircleShape),
-                                    contentAlignment = Alignment.Center,
+                                    contentAlignment   = Alignment.Center,
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Person,
+                                        imageVector        = Icons.Default.Person,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(iconSize.large),
+                                        tint               = MaterialTheme.colorScheme.onPrimary,
+                                        modifier           = Modifier.size(iconSize.large),
                                     )
                                 }
-
                                 Text(
-                                    text = stringResource(R.string.cadastro_usuario_header_titulo),
+                                    text  = stringResource(R.string.cadastro_usuario_header_titulo),
                                     style = MaterialTheme.typography.titleLarge,
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
-
                                 Text(
-                                    text = stringResource(R.string.cadastro_usuario_header_subtitulo),
+                                    text  = stringResource(R.string.cadastro_usuario_header_subtitulo),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
 
+                        // ── Wizard: Stepper + conteúdo + botões ────────────────────────────────
                         Surface(
-                            shape = MaterialTheme.shapes.large,
-                            tonalElevation = spacing.small,
+                            shape           = MaterialTheme.shapes.large,
+                            tonalElevation  = spacing.small,
                             shadowElevation = spacing.extraSmall,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier        = Modifier.fillMaxWidth(),
                         ) {
                             Column {
-                                PrimaryScrollableTabRow(
-                                    selectedTabIndex = abaSelecionada,
-                                    edgePadding = spacing.medium,
-                                    divider = { },
-                                ) {
-                                    tabs.forEachIndexed { index, tab ->
-                                        Tab(
-                                            selected = abaSelecionada == index,
-                                            onClick = { abaSelecionada = index },
-                                            text = { Text(stringResource(tab.titleRes)) },
-                                        )
-                                    }
-                                }
-
-                                HorizontalDivider()
+                                CadastroUsuarioStepperHeader(
+                                    steps          = steps,
+                                    etapaAtual     = uiState.etapaAtual,
+                                    temErroNaEtapa = { step ->
+                                        when (step) {
+                                            CadastroUsuarioTab.DadosPessoais -> uiState.temErroNaEtapa0
+                                            CadastroUsuarioTab.Endereco      -> uiState.temErroNaEtapa1
+                                            CadastroUsuarioTab.Seguranca     -> uiState.temErroNaEtapa2
+                                        }
+                                    },
+                                    onStepClick = { index ->
+                                        // Só permite recuar para etapas já visitadas
+                                        if (index < uiState.etapaAtual) {
+                                            repeat(uiState.etapaAtual - index) {
+                                                onEvent(CadastroUsuarioEvent.VoltarEtapa)
+                                            }
+                                        }
+                                    },
+                                )
 
                                 AnimatedContent(
-                                    targetState = tabs[abaSelecionada],
-                                    label = "CadastroUsuarioTabContent",
+                                    targetState = steps[uiState.etapaAtual],
+                                    label       = "CadastroUsuarioTabContent",
                                 ) { tab ->
                                     when (tab) {
-                                        CadastroUsuarioTab.DadosPessoais -> CadastroUsuarioSectionCard(
-                                            title = stringResource(R.string.cadastro_usuario_secao_dados_pessoais),
-                                            subtitle = stringResource(R.string.cadastro_usuario_header_subtitulo),
-                                        ) {
-                                            CadastroUsuarioField(
-                                                value = uiState.nome,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.NomeAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_nome),
-                                                errorMessage = uiState.erroNome,
-                                                focusRequester = nomeFocusRequester,
-                                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                                                keyboardActions = KeyboardActions(onNext = { cpfFocusRequester.requestFocus() }),
-                                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                                            )
 
-                                            CadastroUsuarioField(
-                                                value = uiState.cpf,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.CpfAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_cpf),
-                                                errorMessage = uiState.erroCpf,
-                                                focusRequester = cpfFocusRequester,
+                                        // ── Etapa 0: Dados pessoais ────────────────────────────
+                                        CadastroUsuarioTab.DadosPessoais -> AppSectionCard(
+                                            title    = stringResource(R.string.cadastro_usuario_secao_dados_pessoais),
+                                            subtitle = stringResource(R.string.cadastro_usuario_secao_dados_pessoais_subtitulo),
+                                        ) {
+                                            AppFormField(
+                                                value           = uiState.nome,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.NomeAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_nome),
+                                                errorMessage    = uiState.erroNome,
+                                                focusRequester  = nomeFocusRequester,
+                                                leadingIcon     = { Icon(Icons.Default.Person, null) },
+                                                keyboardActions = KeyboardActions(onNext = { cpfFocusRequester.requestFocus() }),
+                                                keyboardOptions = KeyboardOptions(
+                                                    capitalization = KeyboardCapitalization.Words,
+                                                    keyboardType   = KeyboardType.Text,
+                                                    imeAction      = ImeAction.Next,
+                                                ),
+                                            )
+                                            AppFormField(
+                                                value           = uiState.cpf,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.CpfAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_cpf),
+                                                hintText        = stringResource(R.string.cadastro_usuario_cpf_hint),
+                                                errorMessage    = uiState.erroCpf,
+                                                focusRequester  = cpfFocusRequester,
                                                 keyboardActions = KeyboardActions(onNext = { emailFocusRequester.requestFocus() }),
                                                 keyboardOptions = KeyboardOptions(
                                                     keyboardType = KeyboardType.Number,
-                                                    imeAction = ImeAction.Next,
+                                                    imeAction    = ImeAction.Next,
                                                 ),
                                             )
-
-                                            CadastroUsuarioField(
-                                                value = uiState.email,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.EmailAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_email),
-                                                errorMessage = uiState.erroEmail,
-                                                focusRequester = emailFocusRequester,
-                                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                                                keyboardActions = KeyboardActions(onNext = { abaSelecionada = CadastroUsuarioTab.Endereco.ordinal }),
+                                            AppFormField(
+                                                value           = uiState.email,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.EmailAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_email),
+                                                errorMessage    = uiState.erroEmail,
+                                                focusRequester  = emailFocusRequester,
+                                                leadingIcon     = { Icon(Icons.Default.Email, null) },
+                                                keyboardActions = KeyboardActions(onNext = { onEvent(CadastroUsuarioEvent.AvancarEtapa) }),
                                                 keyboardOptions = KeyboardOptions(
                                                     keyboardType = KeyboardType.Email,
-                                                    imeAction = ImeAction.Next,
+                                                    imeAction    = ImeAction.Next,
                                                 ),
                                             )
                                         }
 
-                                        CadastroUsuarioTab.Endereco -> CadastroUsuarioSectionCard(
-                                            title = stringResource(R.string.cadastro_usuario_secao_endereco),
+                                        // ── Etapa 1: Endereço ──────────────────────────────────
+                                        CadastroUsuarioTab.Endereco -> AppSectionCard(
+                                            title    = stringResource(R.string.cadastro_usuario_secao_endereco),
                                             subtitle = stringResource(R.string.cadastro_usuario_cep_dica),
                                         ) {
-                                            CadastroUsuarioField(
-                                                value = uiState.cep,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.CepAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_cep),
-                                                errorMessage = uiState.erroCep,
-                                                focusRequester = cepFocusRequester,
+                                            AppFormField(
+                                                value              = uiState.cep,
+                                                onValueChange      = { onEvent(CadastroUsuarioEvent.CepAlterado(it)) },
+                                                label              = stringResource(R.string.cadastro_usuario_cep),
+                                                hintText           = stringResource(R.string.cadastro_usuario_cep_hint),
+                                                errorMessage       = uiState.erroCep,
+                                                focusRequester     = cepFocusRequester,
                                                 showValidationIcon = !uiState.buscandoCep,
-                                                trailingIcon = {
+                                                trailingIcon       = {
                                                     if (uiState.buscandoCep) {
                                                         CircularProgressIndicator(
-                                                            modifier = Modifier
+                                                            modifier    = Modifier
                                                                 .padding(spacing.extraSmall)
                                                                 .size(iconSize.small),
                                                             strokeWidth = 2.dp,
-                                                            color = MaterialTheme.colorScheme.primary,
+                                                            color       = MaterialTheme.colorScheme.primary,
                                                         )
                                                     }
                                                 },
                                                 keyboardActions = KeyboardActions(onNext = { enderecoFocusRequester.requestFocus() }),
                                                 keyboardOptions = KeyboardOptions(
                                                     keyboardType = KeyboardType.Number,
-                                                    imeAction = ImeAction.Next,
+                                                    imeAction    = ImeAction.Next,
                                                 ),
                                             )
-
                                             if (uiState.buscandoCep) {
                                                 Text(
-                                                    text = stringResource(R.string.cadastro_usuario_buscando_cep),
+                                                    text  = stringResource(R.string.cadastro_usuario_buscando_cep),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.primary,
                                                 )
                                             }
-
-                                            CadastroUsuarioField(
-                                                value = uiState.endereco,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.EnderecoAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_endereco),
-                                                errorMessage = uiState.erroEndereco,
-                                                focusRequester = enderecoFocusRequester,
-                                                readOnly = uiState.buscandoCep,
+                                            AppFormField(
+                                                value           = uiState.endereco,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.EnderecoAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_endereco),
+                                                errorMessage    = uiState.erroEndereco,
+                                                focusRequester  = enderecoFocusRequester,
+                                                readOnly        = uiState.buscandoCep,
                                                 keyboardActions = KeyboardActions(onNext = { numberFocusRequester.requestFocus() }),
-                                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                                keyboardOptions = KeyboardOptions(
+                                                    capitalization = KeyboardCapitalization.Words,
+                                                    keyboardType   = KeyboardType.Text,
+                                                    imeAction      = ImeAction.Next,
+                                                ),
                                             )
-
-                                            CadastroUsuarioField(
-                                                value = uiState.number,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.NumberAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_numero),
-                                                errorMessage = uiState.erroNumber,
-                                                focusRequester = numberFocusRequester,
+                                            AppFormField(
+                                                value           = uiState.number,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.NumberAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_numero),
+                                                errorMessage    = uiState.erroNumber,
+                                                focusRequester  = numberFocusRequester,
                                                 keyboardActions = KeyboardActions(onNext = { bairroFocusRequester.requestFocus() }),
                                                 keyboardOptions = KeyboardOptions(
                                                     keyboardType = KeyboardType.Number,
-                                                    imeAction = ImeAction.Next,
+                                                    imeAction    = ImeAction.Next,
                                                 ),
                                             )
-
-                                            CadastroUsuarioField(
-                                                value = uiState.bairro,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.BairroAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_bairro),
-                                                errorMessage = uiState.erroBairro,
-                                                focusRequester = bairroFocusRequester,
-                                                readOnly = uiState.buscandoCep,
+                                            AppFormField(
+                                                value           = uiState.bairro,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.BairroAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_bairro),
+                                                errorMessage    = uiState.erroBairro,
+                                                focusRequester  = bairroFocusRequester,
+                                                readOnly        = uiState.buscandoCep,
                                                 keyboardActions = KeyboardActions(onNext = { estadoFocusRequester.requestFocus() }),
-                                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                                keyboardOptions = KeyboardOptions(
+                                                    capitalization = KeyboardCapitalization.Words,
+                                                    keyboardType   = KeyboardType.Text,
+                                                    imeAction      = ImeAction.Next,
+                                                ),
                                             )
-
-                                            CadastroUsuarioField(
-                                                value = uiState.estado,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.EstadoAlterado(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_estado),
-                                                errorMessage = uiState.erroEstado,
-                                                focusRequester = estadoFocusRequester,
-                                                readOnly = uiState.buscandoCep,
-                                                keyboardActions = KeyboardActions(onNext = { abaSelecionada = CadastroUsuarioTab.Seguranca.ordinal }),
-                                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                            AppFormField(
+                                                value           = uiState.estado,
+                                                onValueChange   = { onEvent(CadastroUsuarioEvent.EstadoAlterado(it)) },
+                                                label           = stringResource(R.string.cadastro_usuario_estado),
+                                                hintText        = stringResource(R.string.cadastro_usuario_estado_hint),
+                                                errorMessage    = uiState.erroEstado,
+                                                focusRequester  = estadoFocusRequester,
+                                                readOnly        = uiState.buscandoCep,
+                                                keyboardActions = KeyboardActions(onNext = { onEvent(CadastroUsuarioEvent.AvancarEtapa) }),
+                                                keyboardOptions = KeyboardOptions(
+                                                    capitalization = KeyboardCapitalization.Characters,
+                                                    keyboardType   = KeyboardType.Text,
+                                                    imeAction      = ImeAction.Next,
+                                                ),
                                             )
                                         }
 
-                                        CadastroUsuarioTab.Seguranca -> CadastroUsuarioSectionCard(
-                                            title = stringResource(R.string.cadastro_usuario_secao_seguranca),
-                                            subtitle = stringResource(R.string.cadastro_usuario_header_subtitulo),
+                                        // ── Etapa 2: Segurança ─────────────────────────────────
+                                        CadastroUsuarioTab.Seguranca -> AppSectionCard(
+                                            title    = stringResource(R.string.cadastro_usuario_secao_seguranca),
+                                            subtitle = stringResource(R.string.cadastro_usuario_secao_seguranca_subtitulo),
                                         ) {
-                                            CadastroUsuarioField(
-                                                value = uiState.senha,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.SenhaAlterada(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_senha),
-                                                errorMessage = uiState.erroSenha,
-                                                focusRequester = senhaFocusRequester,
-                                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                                                trailingIcon = {
+                                            AppFormField(
+                                                value                 = uiState.senha,
+                                                onValueChange         = { onEvent(CadastroUsuarioEvent.SenhaAlterada(it)) },
+                                                label                 = stringResource(R.string.cadastro_usuario_senha),
+                                                hintText              = stringResource(R.string.cadastro_usuario_senha_hint),
+                                                errorMessage          = uiState.erroSenha,
+                                                focusRequester        = senhaFocusRequester,
+                                                leadingIcon           = { Icon(Icons.Default.Lock, null) },
+                                                trailingIcon          = {
                                                     IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
                                                         Icon(
-                                                            imageVector = if (senhaVisivel) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                                            contentDescription = if (senhaVisivel) {
-                                                                stringResource(R.string.cadastro_usuario_cd_ocultar_senha)
-                                                            } else {
-                                                                stringResource(R.string.cadastro_usuario_cd_mostrar_senha)
-                                                            },
+                                                            imageVector        = if (senhaVisivel) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                            contentDescription = stringResource(
+                                                                if (senhaVisivel) R.string.cadastro_usuario_cd_ocultar_senha
+                                                                else R.string.cadastro_usuario_cd_mostrar_senha,
+                                                            ),
                                                         )
                                                     }
                                                 },
-                                                visualTransformation = if (senhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
-                                                keyboardActions = KeyboardActions(onNext = { confirmarSenhaFocusRequester.requestFocus() }),
-                                                keyboardOptions = KeyboardOptions(
+                                                visualTransformation  = if (senhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
+                                                keyboardActions       = KeyboardActions(onNext = { confirmarSenhaFocusRequester.requestFocus() }),
+                                                keyboardOptions       = KeyboardOptions(
                                                     keyboardType = KeyboardType.Password,
-                                                    imeAction = ImeAction.Next,
+                                                    imeAction    = ImeAction.Next,
                                                 ),
                                             )
-
-                                            CadastroUsuarioField(
-                                                value = uiState.confirmarSenha,
-                                                onValueChange = { onEvent(CadastroUsuarioEvent.ConfirmarSenhaAlterada(it)) },
-                                                label = stringResource(R.string.cadastro_usuario_confirmar_senha),
-                                                errorMessage = uiState.erroConfirmarSenha,
-                                                focusRequester = confirmarSenhaFocusRequester,
-                                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                                                trailingIcon = {
+                                            AppFormField(
+                                                value                 = uiState.confirmarSenha,
+                                                onValueChange         = { onEvent(CadastroUsuarioEvent.ConfirmarSenhaAlterada(it)) },
+                                                label                 = stringResource(R.string.cadastro_usuario_confirmar_senha),
+                                                errorMessage          = uiState.erroConfirmarSenha,
+                                                focusRequester        = confirmarSenhaFocusRequester,
+                                                leadingIcon           = { Icon(Icons.Default.Lock, null) },
+                                                trailingIcon          = {
                                                     IconButton(onClick = { confirmarSenhaVisivel = !confirmarSenhaVisivel }) {
                                                         Icon(
-                                                            imageVector = if (confirmarSenhaVisivel) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                                            contentDescription = if (confirmarSenhaVisivel) {
-                                                                stringResource(R.string.cadastro_usuario_cd_ocultar_senha)
-                                                            } else {
-                                                                stringResource(R.string.cadastro_usuario_cd_mostrar_senha)
-                                                            },
+                                                            imageVector        = if (confirmarSenhaVisivel) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                            contentDescription = stringResource(
+                                                                if (confirmarSenhaVisivel) R.string.cadastro_usuario_cd_ocultar_senha
+                                                                else R.string.cadastro_usuario_cd_mostrar_senha,
+                                                            ),
                                                         )
                                                     }
                                                 },
-                                                visualTransformation = if (confirmarSenhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
-                                                keyboardActions = KeyboardActions(onDone = {
+                                                visualTransformation  = if (confirmarSenhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
+                                                keyboardActions       = KeyboardActions(onDone = {
                                                     focusManager.clearFocus()
-                                                    onEvent(CadastroUsuarioEvent.Cadastrar)
+                                                    onEvent(CadastroUsuarioEvent.AvancarEtapa)
                                                 }),
-                                                keyboardOptions = KeyboardOptions(
+                                                keyboardOptions       = KeyboardOptions(
                                                     keyboardType = KeyboardType.Password,
-                                                    imeAction = ImeAction.Done,
+                                                    imeAction    = ImeAction.Done,
                                                 ),
                                             )
                                         }
                                     }
                                 }
-                            }
-                        }
 
-                        Button(
-                            onClick = { onEvent(CadastroUsuarioEvent.Cadastrar) },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.cadastro_usuario_btn_cadastrar))
+                                HorizontalDivider()
+
+                                val isUltimoPasso = uiState.etapaAtual == steps.lastIndex
+                                val proximaAcao = if (isUltimoPasso) {
+                                    stringResource(R.string.cadastro_usuario_microtexto_acao_final)
+                                } else {
+                                    stringResource(
+                                        R.string.cadastro_usuario_microtexto_proxima_acao,
+                                        stringResource(steps[uiState.etapaAtual + 1].titleRes),
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = spacing.medium, vertical = spacing.medium),
+                                    horizontalArrangement = Arrangement.spacedBy(spacing.small),
+                                ) {
+                                    OutlinedButton(
+                                        onClick  = { onEvent(CadastroUsuarioEvent.VoltarEtapa) },
+                                        enabled  = uiState.etapaAtual > 0,
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(stringResource(R.string.cadastro_usuario_btn_anterior))
+                                    }
+
+                                    Button(
+                                        onClick  = {
+                                            focusManager.clearFocus()
+                                            onEvent(CadastroUsuarioEvent.AvancarEtapa)
+                                        },
+                                        enabled  = !uiState.buscandoCep,
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(
+                                            stringResource(
+                                                if (isUltimoPasso) R.string.cadastro_usuario_btn_cadastrar
+                                                else R.string.cadastro_usuario_btn_proximo,
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Text(
+                                    text     = proximaAcao,
+                                    style    = MaterialTheme.typography.bodySmall,
+                                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = spacing.medium)
+                                        .padding(bottom = spacing.medium),
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(spacing.small))
@@ -469,105 +549,52 @@ fun CadastroUsuarioContent(
     }
 }
 
-@Composable
-private fun CadastroUsuarioSectionCard(
-    title: String,
-    subtitle: String? = null,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    val spacing = LocalSpacing.current
+// ── Gerenciamento de foco (responsabilidade exclusiva da UI) ──────────────────
 
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = spacing.small,
-        shadowElevation = spacing.extraSmall,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier = Modifier.padding(spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(spacing.small),
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            content()
+/**
+ * Foca o primeiro campo que contém erro ou está em branco na etapa atual.
+ * Extraída como função top-level para manter `CadastroUsuarioContent` sem lógica além de render.
+ */
+private fun focarPrimeiroCampoComErro(
+    etapaAtual               : Int,
+    uiState                  : CadastroUsuarioUiState,
+    steps                    : List<CadastroUsuarioTab>,
+    nomeFocusRequester       : FocusRequester,
+    cpfFocusRequester        : FocusRequester,
+    emailFocusRequester      : FocusRequester,
+    cepFocusRequester        : FocusRequester,
+    enderecoFocusRequester   : FocusRequester,
+    numberFocusRequester     : FocusRequester,
+    bairroFocusRequester     : FocusRequester,
+    estadoFocusRequester     : FocusRequester,
+    senhaFocusRequester      : FocusRequester,
+    confirmarSenhaFocusRequester: FocusRequester,
+) {
+    when (steps[etapaAtual]) {
+        CadastroUsuarioTab.DadosPessoais -> when {
+            uiState.nome.isBlank()  || uiState.erroNome  != null -> nomeFocusRequester.requestFocus()
+            uiState.cpf.isBlank()   || uiState.erroCpf   != null -> cpfFocusRequester.requestFocus()
+            uiState.email.isBlank() || uiState.erroEmail != null -> emailFocusRequester.requestFocus()
+            else                                                  -> Unit
+        }
+        CadastroUsuarioTab.Endereco -> when {
+            uiState.buscandoCep                                         -> Unit
+            uiState.cep.isBlank()      || uiState.erroCep      != null -> cepFocusRequester.requestFocus()
+            uiState.endereco.isBlank() || uiState.erroEndereco != null -> enderecoFocusRequester.requestFocus()
+            uiState.number.isBlank()   || uiState.erroNumber   != null -> numberFocusRequester.requestFocus()
+            uiState.bairro.isBlank()   || uiState.erroBairro   != null -> bairroFocusRequester.requestFocus()
+            uiState.estado.isBlank()   || uiState.erroEstado   != null -> estadoFocusRequester.requestFocus()
+            else                                                        -> Unit
+        }
+        CadastroUsuarioTab.Seguranca -> when {
+            uiState.senha.isBlank()          || uiState.erroSenha          != null -> senhaFocusRequester.requestFocus()
+            uiState.confirmarSenha.isBlank() || uiState.erroConfirmarSenha != null -> confirmarSenhaFocusRequester.requestFocus()
+            else                                                                    -> Unit
         }
     }
 }
 
-@Composable
-private fun CadastroUsuarioField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    errorMessage: String? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    readOnly: Boolean = false,
-    focusRequester: FocusRequester? = null,
-    showValidationIcon: Boolean = true,
-) {
-    val fieldModifier = if (focusRequester != null) {
-        modifier.fillMaxWidth().focusRequester(focusRequester)
-    } else {
-        modifier.fillMaxWidth()
-    }
-
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        leadingIcon = leadingIcon,
-        trailingIcon = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (showValidationIcon) {
-                    CadastroUsuarioValidationIcon(
-                        hasValue = value.isNotBlank(),
-                        isError = errorMessage != null,
-                    )
-                }
-                trailingIcon?.invoke()
-            }
-        },
-        isError = errorMessage != null,
-        supportingText = errorMessage?.let { { Text(it) } },
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        readOnly = readOnly,
-        singleLine = true,
-        modifier = fieldModifier,
-    )
-}
-
-@Composable
-private fun CadastroUsuarioValidationIcon(
-    hasValue: Boolean,
-    isError: Boolean,
-) {
-    if (!hasValue && !isError) return
-
-    Icon(
-        imageVector = if (isError) Icons.Default.Error else Icons.Default.CheckCircle,
-        contentDescription = null,
-        tint = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-        modifier = Modifier.size(LocalIconSize.current.small),
-    )
-}
+// ── Tier 3: Previews ──────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, name = "CadastroUsuario – Carregando")
 @Preview(showBackground = true, name = "CadastroUsuario – Carregando Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
@@ -590,15 +617,15 @@ private fun CadastroUsuarioPreenchidoPreview() {
     GerenciadorCartoesTheme {
         CadastroUsuarioContent(
             uiState = CadastroUsuarioUiState(
-                nome = "João Silva",
-                cpf = "123.456.789-00",
-                cep = "01310-100",
-                endereco = "Av. Paulista",
-                number = "1000",
-                bairro = "Bela Vista",
-                estado = "SP",
-                email = "joao@email.com",
-                senha = "senha123",
+                nome           = "João Silva",
+                cpf            = "123.456.789-00",
+                cep            = "01310-100",
+                endereco       = "Av. Paulista",
+                number         = "1000",
+                bairro         = "Bela Vista",
+                estado         = "SP",
+                email          = "joao@email.com",
+                senha          = "senha123",
                 confirmarSenha = "senha123",
             ),
         )
